@@ -1,0 +1,22 @@
+TIME SERVER
+Tujuan: Melayani pengecekan jam pada perangkat server
+
+ATURAN PROTOKOL:
+- client harus mengirimkan request dalam bentuk string
+- string harus dalam format
+  REQUEST CRLF
+    
+REQUEST YANG DILAYANI:
+- informasi umum:
+  * Jika request tidak dikenali akan menghasilkan pesan
+    - data: request tidak dikenali
+  * Semua result akan diakhiri dengan character ascii code 
+    #13#10 atau "\r\n" atau CRLF
+
+TIME
+* TUJUAN: untuk mendapatkan jam server
+* RESULT:
+- BERHASIL:
+  - data: jam server dalam format "JAM HH:MM:SS"
+- GAGAL:
+  - data: request error
