@@ -4,10 +4,13 @@ import logging
 
 class ClientThread(threading.Thread):
     
-    def __init__(self, connection, address, protocols):
+    def __init__(self, connection, address, protocols, client_thread_list):
         self.connection = connection
         self.address = address
         self.protocols = protocols
+        self.client_thread_list = client_thread_list
+        self.client_thread_list.add_client_thread(self)
+        logging.warning(f"Total koneksi terhubung {self.client_thread_list.size()}")
         
         threading.Thread.__init__(self)
         
@@ -30,5 +33,7 @@ class ClientThread(threading.Thread):
                 break
                 
         self.connection.close()
+        self.client_thread_list.remove_client_thread(self)
         logging.warning(f"{self.address} putus koneksi")
+        logging.warning(f"Total koneksi terhubung {self.client_thread_list.size()}")
             
