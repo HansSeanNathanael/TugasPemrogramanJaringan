@@ -20,14 +20,14 @@ class ClientThread(threading.Thread):
             request = self.connection.recv(32)
             
             if request:
-                request = request.decode()
+                request = request.decode('utf-8')
                 while request[-2:] != "\r\n":
-                    request += self.connection.recv(32).decode()
+                    request += self.connection.recv(32).decode('utf-8')
                 
                 request = request[:-2]
                 logging.warning(f"{self.address} request {request}")
                 response = self.protocols.proses_request(request) + "\r\n"
-                self.connection.sendall(response.encode())
+                self.connection.sendall(response.encode('utf-8'))
                 
             else:
                 break

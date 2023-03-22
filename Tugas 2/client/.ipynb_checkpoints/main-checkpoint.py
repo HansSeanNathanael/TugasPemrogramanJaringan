@@ -27,13 +27,13 @@ if __name__ == "__main__":
                 break
             else:
                 request += "\r\n"
-                client_socket.sendall(request.encode())
+                client_socket.sendall(request.encode('utf-8'))
                 response = client_socket.recv(32)
                 
                 if response:
-                    response = response.decode()
+                    response = response.decode('utf-8')
                     while response[-2:] != "\r\n":
-                        response = response + client_socket.recv(32).decode()
+                        response = response + client_socket.recv(32).decode('utf-8')
                     print(f"{response[:-2]}")
                 else:
                     logging.warning(f"Server terputus")
