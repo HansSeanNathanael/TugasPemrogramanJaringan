@@ -10,5 +10,5 @@ class ProtocolInterface:
         
         current_time = datetime.datetime.now()
         
-        return f"JAM {current_time.hour}:{current_time.minute}:{current_time.second}"
+        return f"JAM {current_time.hour:02d}:{current_time.minute:02d}:{current_time.second:02d}"
         
