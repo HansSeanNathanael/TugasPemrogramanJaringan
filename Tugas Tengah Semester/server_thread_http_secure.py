@@ -75,8 +75,8 @@ class Server(threading.Thread):
                 clt = ProcessTheClient(self.secure_connection, self.client_address)
                 clt.start()
                 # self.the_clients.append(clt)
-            except ssl.SSLError as essl:
-                print(str(essl))
+            except Exception as e:
+                print(e)
 
 
 
