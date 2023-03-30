@@ -8,7 +8,6 @@ from http import HttpServer
 
 httpserver = HttpServer()
 
-
 class ProcessTheClient(multiprocessing.Process):
     def __init__(self, connection, address):
         self.connection = connection
@@ -16,6 +15,7 @@ class ProcessTheClient(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
 
     def run(self):
+        print(self.connection)
         rcv=""
         while True:
             try:
@@ -25,7 +25,7 @@ class ProcessTheClient(multiprocessing.Process):
                     #agar bisa mendeteksi \r\n
                     d = data.decode()
                     rcv=rcv+d
-                    if rcv[-2:]=='\r\n':
+                    if rcv[-4:]=='\r\n\r\n':
                         #end of command, proses string
                         logging.warning("data dari client: {}" . format(rcv))
                         hasil = httpserver.proses(rcv)
@@ -36,18 +36,26 @@ class ProcessTheClient(multiprocessing.Process):
                         #hasil sudah dalam bentuk bytes
                         self.connection.sendall(hasil)
                         rcv=""
+                        try:
+                            self.connection.shutdown(socket.SHUT_WR)
+                        except:
+                            pass
                         self.connection.close()
+                        break
                 else:
                     break
-            except OSError as e:
-                pass
+            except Exception as e:
+                logging.warning(e)
+        try:
+            self.connection.shutdown(socket.SHUT_WR)
+        except:
+            pass
         self.connection.close()
 
 
 
 class Server(multiprocessing.Process):
     def __init__(self):
-        self.the_clients = []
         self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         multiprocessing.Process.__init__(self)
@@ -61,7 +69,6 @@ class Server(multiprocessing.Process):
 
             clt = ProcessTheClient(self.connection, self.client_address)
             clt.start()
-            self.the_clients.append(clt)
 
 
 

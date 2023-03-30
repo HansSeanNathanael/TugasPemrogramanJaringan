@@ -1,7 +1,7 @@
 import os
 from socket import *
 import socket
-import threading
+import multiprocessing
 import time
 import sys
 import logging
@@ -13,11 +13,11 @@ from http import HttpServer
 httpserver = HttpServer()
 
 
-class ProcessTheClient(threading.Thread):
+class ProcessTheClient(multiprocessing.Process):
     def __init__(self, connection, address):
         self.connection = connection
         self.address = address
-        threading.Thread.__init__(self)
+        multiprocessing.Process.__init__(self)
 
     def run(self):
         rcv=""
@@ -40,18 +40,25 @@ class ProcessTheClient(threading.Thread):
                         #hasil sudah dalam bentuk bytes
                         self.connection.sendall(hasil)
                         rcv=""
+                        try:
+                            self.connection.shutdown(socket.SHUT_WR)
+                        except:
+                            pass
                         self.connection.close()
+                        break
                 else:
                     break
-            except OSError as e:
-                pass
+            except Exception as e:
+                logging.warning(e)
+        try:
+            self.connection.shutdown(socket.SHUT_WR)
+        except:
+            pass
         self.connection.close()
 
 
-
-class Server(threading.Thread):
+class Server(multiprocessing.Process):
     def __init__(self,hostname='testing.net'):
-        self.the_clients = []
 #------------------------------
         self.hostname = hostname
         cert_location = os.getcwd() + '/certs/'
@@ -61,7 +68,7 @@ class Server(threading.Thread):
 #---------------------------------
         self.my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        threading.Thread.__init__(self)
+        multiprocessing.Process.__init__(self)
 
     def run(self):
         self.my_socket.bind(('0.0.0.0', 8443))
@@ -73,17 +80,14 @@ class Server(threading.Thread):
                 logging.warning("connection from {}".format(self.client_address))
                 clt = ProcessTheClient(self.secure_connection, self.client_address)
                 clt.start()
-                self.the_clients.append(clt)
             except ssl.SSLError as essl:
                 print(str(essl))
-
-
 
 
 def main():
     svr = Server()
     svr.start()
+    svr.join()
 
 if __name__=="__main__":
     main()
-
