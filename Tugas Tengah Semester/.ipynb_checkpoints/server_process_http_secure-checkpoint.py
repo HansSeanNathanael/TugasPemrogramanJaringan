@@ -58,9 +58,8 @@ class ProcessTheClient(multiprocessing.Process):
 
 
 class Server(multiprocessing.Process):
-    def __init__(self,hostname='testing.net'):
+    def __init__(self):
 #------------------------------
-        self.hostname = hostname
         cert_location = os.getcwd() + '/certs/'
         self.context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.context.load_cert_chain(certfile=cert_location + 'domain.crt',
