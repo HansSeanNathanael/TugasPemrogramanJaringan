@@ -26,7 +26,7 @@ def ProcessTheClient(connection,address):
                     connection.sendall(hasil)
                     received = ""
                     connection.close()
-                    return
+                    break
             else:
                 break
         except OSError as e:
@@ -49,14 +49,13 @@ def Server(portnumber = 8889):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    server_socket.bind(('0.0.0.0', portnumber))
-    server_socket.listen(1)
+    server_socket.bind(("0.0.0.0", portnumber))
+    server_socket.listen(10)
 
     with concurrent.futures.ProcessPoolExecutor(20) as executor:
         while True:
             connection, client_address = server_socket.accept()
             client_process = executor.submit(ProcessTheClient, connection, client_address)
-            the_clients.add(client_process)
             
             should_deleted = []
             for client_future in the_clients:
@@ -65,6 +64,7 @@ def Server(portnumber = 8889):
             for client_future in should_deleted:
                 the_clients.remove(client_future)
             
+            the_clients.add(client_process)
             print(f"Jumlah client yang terhubung {len(the_clients)}")
 
 

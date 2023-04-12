@@ -4,13 +4,22 @@ import sys
 import asyncore
 import logging
 
-
+class IPParser:
+    def parse_address(self, address):
+        splitted_address = address.split(":")
+        return (splitted_address[0], int(splitted_address[1]))
+    
+    def parse_addresses(self, addresses):
+        address_list = []
+        for address in addresses:
+            address_list.append(self.parse_address(address))
+            
+        return address_list
+    
+    
 class BackendList:
-    def __init__(self):
-        self.servers=[]
-        # self.servers.append(('127.0.0.1',9000))
-        self.servers.append(('127.0.0.1',9001))
-        # self.servers.append(('127.0.0.1',9002))
+    def __init__(self, servers = []):
+        self.servers = servers
         self.current=0
         
     def getserver(self):
@@ -66,9 +75,9 @@ class ProcessTheClient(asyncore.dispatcher):
             pass
         
 class Bridge:
-    def __init__(self, client_socket, server_target_address):
-        self.client_dispatcher = ProcessTheClient(client_socket)
-        self.server_dispatcher = Backend(server_target_address)
+    def __init__(self, client_dispatcher, server_dispatcher):
+        self.client_dispatcher = client_dispatcher
+        self.server_dispatcher = server_dispatcher
         
         self.client_dispatcher.set_handler(self.send_to_server, self.close_connection)
         self.server_dispatcher.set_handler(self.send_to_client, self.close_connection)
@@ -86,14 +95,14 @@ class Bridge:
         
 
 class Server(asyncore.dispatcher):
-    def __init__(self, portnumber):
+    def __init__(self, portnumber, backend_list):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.set_reuse_addr()
+        self.set_reuse_addr()
         
         self.bind(('0.0.0.0',portnumber))
         self.listen(5)
-        self.backend_list = BackendList()
+        self.backend_list = backend_list
         logging.warning("load balancer running on port {}" . format(portnumber))
 
     def handle_accept(self):
@@ -105,7 +114,7 @@ class Server(asyncore.dispatcher):
             backend_used_now = self.backend_list.getserver()
             logging.warning("koneksi dari {} diteruskan ke {}" . format(address, backend_used_now))
             
-            bridge = Bridge(socket, backend_used_now)
+            bridge = Bridge(ProcessTheClient(socket), Backend(backend_used_now))
             
     
     def handle_close(self):
@@ -117,7 +126,11 @@ def main():
         portnumber=int(sys.argv[1])
     except:
         pass
-    svr = Server(portnumber)
+    
+    ip_parser = IPParser()
+    backend_list = BackendList(ip_parser.parse_addresses(sys.argv[2:]))
+    
+    svr = Server(portnumber, backend_list)
     asyncore.loop()
 
 if __name__=="__main__":
