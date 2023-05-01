@@ -68,8 +68,8 @@ def remote_get(params=[]):
 def remote_put(params=[]):
     try: 
         fp = open(params[1], "rb")
-        tes = fp.read()
-        command_str=f"PUT {params[0]} {base64.b64encode(tes).decode()}"
+        file_bytes = fp.read()
+        command_str=f"PUT {params[0]} {base64.b64encode(file_bytes).decode()}"
         fp.close()
         
         # print(command_str)

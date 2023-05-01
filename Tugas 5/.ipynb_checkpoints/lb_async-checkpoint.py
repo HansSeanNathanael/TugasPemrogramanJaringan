@@ -20,7 +20,7 @@ class IPParser:
 class BackendList:
     def __init__(self, servers = []):
         self.servers = servers
-        self.current=0
+        self.current = 0
         
     def getserver(self):
         s = self.servers[self.current]
