@@ -127,7 +127,7 @@ class CrossServer():
                 sock.sendall(f"join_group\r\n{self.bank_socket[domain_destinasi]['tokenid']}\r\n{source_email}\r\n{nama_group}\r\n{password}\r\n\r\n".encode())
                 hasil = ""
                 while True:
-                    data = self.sock.recv(64)
+                    data = sock.recv(64)
 
                     if (data):
                         hasil += data.decode()
