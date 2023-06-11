@@ -1,0 +1,106 @@
+CHAT SERVER
+TUJUAN: melayani client dalam mengirimkan chat untuk client lain dalam sebuah realm dan antar realm 
+
+ATURAN SISTEM
+- id dari user menggunakan format email
+
+ATURAN PROTOKOL:
+- client harus mengirimkan request dalam bentuk string
+- string harus dalam format
+  REQUEST spasi PARAMETER
+- PARAMETER dapat berkembang menjadi PARAMETER1 spasi PARAMETER2 dan seterusnya
+- Hasil akhir request ditandai dengan character ascii code #13#10#13#10 atau "\r\n\r\n" atau dua CRLF
+
+REQUEST YANG DILAYANI:
+- informasi umum:
+  * Jika request tidak dikenali akan menghasilkan pesan
+    - status: ERROR
+    - message: pesan error
+  * Semua result akan diberikan dalam bentuk JSON dan diakhiri
+    dengan character ascii code #13#10#13#10 atau "\r\n\r\n"
+
+REGISTER
+* TUJUAN: untuk membuat akun
+* FORMAT: REGISTER username password nama negara
+* PARAMETER:
+    - username : nama dari akun
+    - password : password dari akun
+    - nama : nama pembuat akun
+    - negara : asal pembuat akun
+* RESULT:
+- BERHASIL:
+  - status: OK
+  - email: email untuk akun yang dibuat
+- GAGAL:
+  - status: ERROR
+  - message: pesan kesalahan
+
+AUTH
+* TUJUAN: untuk login dan mendapatkan token session yang akan digunakan sebagai autentikasi
+* FORMAT: AUTH username password
+* PARAMETER:
+  - username : nama akun
+  - password : password akun
+* RESULT:
+- BERHASIL:
+  - status: OK
+  - tokenid : id dari session
+- GAGAL:
+  - status: ERROR
+  - message: pesan kesalahan
+
+REGISTER_GROUP
+* TUJUAN: untuk membuat sebuah group chat dan pembuat group akan otomatis bergabung ke dalam group
+* FORMAT: REGISTER_GROUP sessionid nama_group password
+* PARAMETER:
+  - sessionid : token autentikasi dari request AUTH
+  - nama_group : nama dari group yang akan dibuat
+  - password : password group untuk keamanan
+* RESULT:
+- BERHASIL:
+  - status: OK
+  - email_group : email dari grup yang dibuat
+- GAGAL:
+  - status: ERROR
+  - message: pesan kesalahan
+  
+JOIN_GROUP
+* TUJUAN: untuk bergabung pada sebuah grup (dapat grup dalam realm sendiri atau grup realm lain)
+* FORMAT: JOIN_GROUP sessionid nama_group password
+* PARAMETER:
+  - sessionid: token autentikasi dari request AUTH
+  - nama_group: email dari grup
+  - password: password grup
+* RESULT:
+- BERHASIL:
+  - status: OK
+- GAGAL:
+  - status: ERROR
+  - message: pesan kesalahan
+  
+SEND
+* TUJUAN: untuk mengirim chat (dapat menuju client lain dalam realm yang sama atau realm berbeda)
+* FORMAT: JOIN_GROUP sessionid email_destination message
+* PARAMETER:
+  - sessionid: token autentikasi dari request AUTH
+  - email_destination: email tujuan chat
+  - message: pesan yang dikirimkan
+* RESULT:
+- BERHASIL:
+  - status: OK
+- GAGAL:
+  - status: ERROR
+  - message: pesan kesalahan
+  
+INBOX
+* TUJUAN: untuk mengambil chat yang berada diterima dari client lain yang disimpan pada inbox server
+* FORMAT: CHAT sessionid
+* PARAMETER:
+  - sessionid: token autentikasi dari request AUTH
+* RESULT:
+- BERHASIL:
+  - status: OK
+  - messages: JSON dengan key adalah email pengirim pesan dan valuenya adalah array berisi pesan
+- GAGAL:
+  - status: ERROR
+  - message: pesan kesalahan
